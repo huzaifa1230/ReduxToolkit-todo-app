@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +9,7 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -16,7 +17,20 @@ function Signup() {
       setError("Please fill in all fields.");
       return;
     }
-
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/users/register",
+        {
+          username,
+          email,
+          password,
+        }
+      );
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+      setError("Unable to signup");
+    }
     alert("Signup successful!");
     navigate("/login");
   };

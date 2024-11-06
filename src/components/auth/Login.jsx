@@ -1,26 +1,40 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!username || !password) {
-      setError("Please enter both username and password.");
+    if (!email || !password) {
+      setError("Please enter both email and password.");
       return;
     }
 
-    if (username === "admin" && password === "password") {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/users/login",
+        {
+          email,
+          password,
+        }
+      );
+      console.log(response);
+
+      const { token } = response.data;
+
+      localStorage.setItem("token", token);
       alert("Login successful!");
       navigate("/");
-    } else {
-      setError("Invalid username or password.");
+    } catch (err) {
+      console.error(err);
+      setError("Invalid email or password.");
     }
   };
 
@@ -30,13 +44,13 @@ function Login() {
         <h1 className="text-2xl font-bold mb-4">Login</h1>
         <form onSubmit={handleLogin}>
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium">Username</label>
+            <label className="block mb-2 text-sm font-medium">Email</label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded"
-              placeholder="Enter your username"
+              placeholder="Enter your email"
             />
           </div>
           <div className="mb-4">
