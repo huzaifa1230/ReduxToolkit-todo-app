@@ -1,16 +1,18 @@
-import AddTodo from "./components/AddTodo";
-import Todos from "./components/todos";
+import Login from "./components/auth/Login";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Home from "./Screen/Home/Home";
+import Signup from "./components/auth/Signup";
 
 function App() {
   return (
     <>
-      <div className="bg-gray-500 pt-6">
-        <h1 className="text-2xl font-semibold flex justify-center pt-4">
-          TODO App using redux toolkit
-        </h1>
-        <AddTodo />
-        <Todos />
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }
