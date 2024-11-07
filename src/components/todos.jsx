@@ -1,24 +1,87 @@
-import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { removeTodo, updateTodo } from "../features/todo/todoSlice";
+import { useState, useEffect } from "react";
 
 function Todos() {
-  const todos = useSelector((state) => state.todos);
-  const dispatch = useDispatch();
-
+  const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState("");
+
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/todo", {
+          method: "GET",
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch todos");
+        }
+
+        const data = await response.json();
+        console.log(data);
+        setTodos(data);
+      } catch (error) {
+        console.error("Error fetching todos:", error);
+      }
+    };
+
+    fetchTodos();
+  }, []);
 
   const handleEdit = (id, text) => {
     setEditId(id);
     setEditText(text);
   };
 
-  const handleUpdate = (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    dispatch(updateTodo({ id: editId, text: editText }));
-    setEditId(null);
-    setEditText("");
+    try {
+      const response = await fetch(`http://localhost:5000/api/todo/${editId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("token"),
+        },
+        body: JSON.stringify({ text: editText }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error updating todo");
+      }
+
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo._id === editId ? { ...todo, text: editText } : todo
+        )
+      );
+
+      setEditId(null);
+      setEditText("");
+    } catch (error) {
+      console.error("Error updating todo:", error);
+    }
+  };
+
+  const handleRemove = async (id) => {
+    console.log("Todo ID to be deleted:", id);
+    try {
+      const response = await fetch(`http://localhost:5000/api/todo/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Error deleting todo");
+      }
+
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+    }
   };
 
   return (
@@ -28,9 +91,9 @@ function Todos() {
         {todos.map((todo) => (
           <li
             className="mt-4 flex justify-between items-center bg-zinc-800 px-4 py-2 rounded"
-            key={todo.id}
+            key={todo._id}
           >
-            {editId === todo.id ? (
+            {editId === todo._id ? (
               <form onSubmit={handleUpdate} className="flex flex-1 space-x-3">
                 <input
                   type="text"
@@ -51,13 +114,13 @@ function Todos() {
                 <div className="flex space-x-2">
                   <button
                     className="text-white bg-blue-500 border-0 px-4 py-1 focus:outline-none hover:bg-blue-600 rounded text-md"
-                    onClick={() => handleEdit(todo.id, todo.text)}
+                    onClick={() => handleEdit(todo._id, todo.text)}
                   >
                     Edit
                   </button>
                   <button
                     className="text-white bg-red-500 border-0 px-4 py-1 focus:outline-none hover:bg-red-600 rounded text-md"
-                    onClick={() => dispatch(removeTodo(todo.id))}
+                    onClick={() => handleRemove(todo._id)}
                   >
                     X
                   </button>

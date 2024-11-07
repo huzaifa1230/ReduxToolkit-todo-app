@@ -20,8 +20,8 @@ function Home() {
         Logout
       </button>
 
-      <h1 className="text-2xl font-semibold flex justify-center pt-4">
-        TODO App using redux toolkit
+      <h1 className="text-2xl font-semibold  flex justify-center pt-4">
+        MERN Stack TODO App
       </h1>
 
       <AddTodo />
