@@ -1,50 +1,15 @@
-// import { useState } from "react";
-// import { useDispatch } from "react-redux";
-// import { addTodo } from "../features/todo/todoSlice";
-
-// function AddTodo() {
-//   const [input, setInput] = useState("");
-//   const dispatch = useDispatch();
-//   const addTodoHandler = (e) => {
-//     e.preventDefault();
-//     dispatch(addTodo(input));
-//     setInput("");
-//   };
-//   return (
-//     <form
-//       onSubmit={addTodoHandler}
-//       className="flex justify-center space-x-3 mt-10"
-//     >
-//       <input
-//         type="text"
-//         className="bg-gray-800 rounded border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-900 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-//         placeholder="Enter todo"
-//         value={input}
-//         onChange={(e) => setInput(e.target.value)}
-//       />
-//       <button
-//         type="submit"
-//         className="text-white bg-indigo-500 border-0 py-2 px-2 focus:outline-none hover:bg-indigo-600 rounded-lg text-lg"
-//       >
-//         Add todo
-//       </button>
-//     </form>
-//   );
-// }
-
-// export default AddTodo;
-
 import { useState } from "react";
 
-function AddTodo() {
+function AddTodo({ setTodos }) {
   const [input, setInput] = useState("");
+  const [priority, setPriority] = useState(false);
+  const [deadline, setDeadline] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const addTodoHandler = async (e) => {
     e.preventDefault();
 
-    window.location.reload();
     if (!input.trim()) return;
 
     setLoading(true);
@@ -64,7 +29,11 @@ function AddTodo() {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("token"),
         },
-        body: JSON.stringify({ text: input }), // Send the todo text in the request body
+        body: JSON.stringify({
+          text: input,
+          priority: priority,
+          deadline: deadline,
+        }),
       });
 
       const data = await response.json();
@@ -73,8 +42,11 @@ function AddTodo() {
         throw new Error(data.message || "Failed to add todo");
       }
 
-      // Reset input after successful todo creation
+      setTodos((prevTodos) => [...prevTodos, data]);
+
       setInput("");
+      setPriority(false);
+      setDeadline("");
       console.log("Todo added successfully:", data);
     } catch (error) {
       setError(error.message);
@@ -85,28 +57,61 @@ function AddTodo() {
   };
 
   return (
-    <div>
-      <form
-        onSubmit={addTodoHandler}
-        className="flex justify-center space-x-3 mt-10"
-      >
-        <input
-          type="text"
-          className="bg-gray-800 rounded border border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-900 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
-          placeholder="Enter todo"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="text-white bg-indigo-500 border-0 py-2 px-2 focus:outline-none hover:bg-indigo-600 rounded-lg text-lg"
-        >
-          Add todo
-        </button>
+    <div className="max-w-lg mx-auto mt-8 bg-gray-900 p-6 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-semibold text-center text-white mb-6">
+        Add New Todo
+      </h2>
+
+      <form onSubmit={addTodoHandler} className="space-y-4">
+        {/* Todo Input */}
+        <div className="flex flex-col">
+          <label htmlFor="todoText" className="text-white mb-2">
+            Todo Description
+          </label>
+          <input
+            id="todoText"
+            type="text"
+            className="bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-4"
+            placeholder="Enter todo"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={priority}
+            onChange={(e) => setPriority(e.target.checked)}
+            className="mr-3 h-5 w-5 rounded border-gray-700 text-indigo-500 focus:ring-2 focus:ring-indigo-500"
+          />
+          <span className="text-white">Mark as Priority</span>
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="deadline" className="text-white mb-2">
+            Set a Deadline
+          </label>
+          <input
+            id="deadline"
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 py-2 px-4"
+          />
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className="w-full bg-indigo-500 text-white font-semibold py-2 rounded-lg shadow-md hover:bg-indigo-600 focus:outline-none"
+          >
+            {loading ? "Adding..." : "Add Todo"}
+          </button>
+        </div>
       </form>
 
-      {loading && <p>Adding your todo...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 text-center mt-3">{error}</p>}
     </div>
   );
 }

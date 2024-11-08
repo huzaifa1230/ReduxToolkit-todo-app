@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import AddTodo from "../../components/AddTodo";
+
 import Todos from "../../components/todos";
 
 function Home() {
@@ -12,7 +12,7 @@ function Home() {
   };
 
   return (
-    <div className="bg-gray-500 pt-6">
+    <div className="bg-gray-500 pt-6 pb-20">
       <button
         onClick={handleLogout}
         className="bg-red-500 text-white py-2 px-4 rounded-md absolute top-6 right-6"
@@ -24,7 +24,6 @@ function Home() {
         MERN Stack TODO App
       </h1>
 
-      <AddTodo />
       <Todos />
     </div>
   );

@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+import AddTodo from "./AddTodo";
 
 function Todos() {
   const [todos, setTodos] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState("");
+  const [editPriority, setEditPriority] = useState(false);
+  const [editDeadline, setEditDeadline] = useState("");
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -30,9 +33,11 @@ function Todos() {
     fetchTodos();
   }, []);
 
-  const handleEdit = (id, text) => {
+  const handleEdit = (id, text, priority, deadline) => {
     setEditId(id);
     setEditText(text);
+    setEditPriority(priority);
+    setEditDeadline(deadline);
   };
 
   const handleUpdate = async (e) => {
@@ -44,7 +49,11 @@ function Todos() {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("token"),
         },
-        body: JSON.stringify({ text: editText }),
+        body: JSON.stringify({
+          text: editText,
+          priority: editPriority,
+          deadline: editDeadline,
+        }),
       });
 
       if (!response.ok) {
@@ -53,12 +62,21 @@ function Todos() {
 
       setTodos((prevTodos) =>
         prevTodos.map((todo) =>
-          todo._id === editId ? { ...todo, text: editText } : todo
+          todo._id === editId
+            ? {
+                ...todo,
+                text: editText,
+                priority: editPriority,
+                deadline: editDeadline,
+              }
+            : todo
         )
       );
 
       setEditId(null);
       setEditText("");
+      setEditPriority(false);
+      setEditDeadline("");
     } catch (error) {
       console.error("Error updating todo:", error);
     }
@@ -86,7 +104,7 @@ function Todos() {
 
   return (
     <>
-      <div className="flex justify-center pt-10 font-bold text-xl">Todos</div>
+      <AddTodo setTodos={setTodos} />
       <div className="pl-12 pr-12">
         {todos.map((todo) => (
           <li
@@ -101,6 +119,23 @@ function Todos() {
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                 />
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={editPriority}
+                    onChange={(e) => setEditPriority(e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-white">Priority</span>
+                </div>
+
+                <input
+                  type="date"
+                  value={editDeadline}
+                  onChange={(e) => setEditDeadline(e.target.value)}
+                  className="bg-gray-800 rounded border border-gray-700 text-base text-gray-100 py-1 px-3"
+                />
                 <button
                   type="submit"
                   className="text-white bg-indigo-500 border-0 py-1 px-2 focus:outline-none hover:bg-indigo-600 rounded-lg text-md"
@@ -111,10 +146,27 @@ function Todos() {
             ) : (
               <>
                 <div className="text-white">{todo.text}</div>
+                <div className="text-gray-400">
+                  {todo.priority ? "Priority" : "Normal"}
+                </div>
+                <div className="text-gray-400">
+                  {todo.deadline
+                    ? `Deadline: ${new Date(
+                        todo.deadline
+                      ).toLocaleDateString()}`
+                    : "No deadline"}
+                </div>
                 <div className="flex space-x-2">
                   <button
                     className="text-white bg-blue-500 border-0 px-4 py-1 focus:outline-none hover:bg-blue-600 rounded text-md"
-                    onClick={() => handleEdit(todo._id, todo.text)}
+                    onClick={() =>
+                      handleEdit(
+                        todo._id,
+                        todo.text,
+                        todo.priority,
+                        todo.deadline
+                      )
+                    }
                   >
                     Edit
                   </button>

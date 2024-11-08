@@ -10,7 +10,6 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        {/* Protect Home route with ProtectedRoute */}
         <Route path="/" element={<ProtectedRoute element={<Home />} />} />
       </Routes>
     </BrowserRouter>
